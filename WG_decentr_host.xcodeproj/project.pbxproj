@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		75FFBBC32864ED4700AF3657 /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 75FFBBC22864ED4700AF3657 /* main.cpp */; };
+		75FFBBCB2864ED7000AF3657 /* getport.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 75FFBBC92864ED7000AF3657 /* getport.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -25,6 +26,9 @@
 /* Begin PBXFileReference section */
 		75FFBBBF2864ED4700AF3657 /* WG_decentr_host */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = WG_decentr_host; sourceTree = BUILT_PRODUCTS_DIR; };
 		75FFBBC22864ED4700AF3657 /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
+		75FFBBC92864ED7000AF3657 /* getport.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = getport.cpp; sourceTree = "<group>"; };
+		75FFBBCA2864ED7000AF3657 /* getport.hpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = getport.hpp; sourceTree = "<group>"; };
+		75FFBBCC2864ED9700AF3657 /* json.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = json.hpp; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -57,7 +61,10 @@
 		75FFBBC12864ED4700AF3657 /* WG_decentr_host */ = {
 			isa = PBXGroup;
 			children = (
+				75FFBBCC2864ED9700AF3657 /* json.hpp */,
 				75FFBBC22864ED4700AF3657 /* main.cpp */,
+				75FFBBC92864ED7000AF3657 /* getport.cpp */,
+				75FFBBCA2864ED7000AF3657 /* getport.hpp */,
 			);
 			path = WG_decentr_host;
 			sourceTree = "<group>";
@@ -120,6 +127,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				75FFBBC32864ED4700AF3657 /* main.cpp in Sources */,
+				75FFBBCB2864ED7000AF3657 /* getport.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -238,20 +246,26 @@
 		75FFBBC72864ED4700AF3657 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = 6FTDXZ346N;
 				ENABLE_HARDENED_RUNTIME = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.decentr.wg-host";
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
 			};
 			name = Debug;
 		};
 		75FFBBC82864ED4700AF3657 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = 6FTDXZ346N;
 				ENABLE_HARDENED_RUNTIME = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.decentr.wg-host";
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "";
 			};
 			name = Release;
 		};
