@@ -44,11 +44,13 @@ std::string exec(const char* cmd) {
 
 int makeChild()
 {
-    if(std::filesystem::exists(FIFO_PATH))
+    if (access(FIFO_PATH, F_OK) == 0)
     {
+        //printf("File exists\n");
       //nothing to do child already exists
         return 0;
     }else{
+        //printf("File not exists\n");
         //create child:
         pid_t pid;
         pid = fork();
@@ -75,7 +77,7 @@ int makeChild()
                     //logFile << "opening error not EAGAIN " << std::endl;
                     //logFile.close();
                     close(pipefd);
-                    std::filesystem::remove(FIFO_PATH);
+                    remove(FIFO_PATH);
                     return 1;
                 }
             }
@@ -124,7 +126,7 @@ int makeChild()
                     {
                         //logFile << "CHECK failed, vpn down"<<std::endl;
                         // interface is down, notify user, delete status file, stop the execution
-                        if(std::filesystem::exists(STATUS_PATH))
+                        if (access(STATUS_PATH, F_OK) == 0)
                         {
                             
                             //logFile << "before message"<<std::endl;
@@ -132,7 +134,7 @@ int makeChild()
                             command_ss_reconect << "/usr/bin/osascript -e 'do shell script \"bash -c \\\"wg-quick down "<< CONFIG_PATH<<" \\\"; bash -c \\\"wg-quick up "<< CONFIG_PATH " \\\"; echo worked \" with administrator privileges with prompt \"Decentr VPN is disconnected!\n Enter password to reconect Decentr VPN\"' ";
                             if(exec(command_ss_reconect.str().c_str()).empty())
                             {
-                                std::filesystem::remove(STATUS_PATH);
+                                remove(STATUS_PATH);
                                 stop = true;
                                 break;
                             }
@@ -149,7 +151,7 @@ int makeChild()
             close(pipefd);
             //logFile.close();
             // remowe fifo file
-            std::filesystem::remove(FIFO_PATH);
+            remove(FIFO_PATH);
             return 1; // signal to exit
         }
     }
@@ -176,10 +178,10 @@ void SendSignal(int signal)
 
 bool isWGInstalled()
 {
-    if(std::filesystem::exists(WG_PATH) &&
-       std::filesystem::exists(WG_QUICK_PATH) &&
-       std::filesystem::exists(WG_GO_PATH) &&
-       std::filesystem::exists(WG_BASH_PATH) )
+    if( access(WG_PATH, F_OK) == 0 &&
+    access(WG_QUICK_PATH, F_OK) == 0 &&
+    access(WG_GO_PATH, F_OK) == 0 &&
+    access(WG_BASH_PATH, F_OK) == 0 )
     {
         return true;
     }
@@ -307,7 +309,8 @@ int main()
                 }
                 else
                 {
-                    if(std::filesystem::exists(STATUS_PATH))
+                    
+                    if(access(STATUS_PATH, F_OK) == 0)
                     {
                         std::ifstream statusFile(STATUS_PATH);
                         std::string line;
@@ -333,7 +336,7 @@ int main()
                     SendSignal(START);
                 }else{
                     SendSignal(STOP);
-                    std::filesystem::remove(STATUS_PATH);
+                    remove(STATUS_PATH);
                     outMessage_ss << "{\"result\":true}";
                 }
             }
