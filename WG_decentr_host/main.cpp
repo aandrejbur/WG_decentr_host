@@ -66,7 +66,7 @@ int makeChild()
             //std::ofstream logFile;
             //logFile.open(LOG_PATH_CH, std::ios::app);
             //logFile << "Child started: " << std::endl;
-            setenv("PATH", "/Applications/Decentr.app/Contents/Frameworks/Decentr Framework.framework/Helpers:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin", 1);
+            setenv("PATH", "/Applications/tomi.app/Contents/Frameworks/tomi Framework.framework/Helpers:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin", 1);
             int signal = 0;
             bool stop = false, check = false;
             int pipefd = open(FIFO_PATH,O_RDONLY | O_NONBLOCK);
@@ -131,7 +131,7 @@ int makeChild()
                             
                             //logFile << "before message"<<std::endl;
                             std::stringstream command_ss_reconect;
-                            command_ss_reconect << "/usr/bin/osascript -e 'do shell script \"bash -c \\\"wg-quick down "<< CONFIG_PATH<<" \\\"; bash -c \\\"wg-quick up "<< CONFIG_PATH " \\\"; echo worked \" with administrator privileges with prompt \"Decentr VPN is disconnected!\n Enter password to reconect Decentr VPN\"' ";
+                            command_ss_reconect << "/usr/bin/osascript -e 'do shell script \"bash -c \\\"wg-quick down "<< CONFIG_PATH<<" \\\"; bash -c \\\"wg-quick up "<< CONFIG_PATH " \\\"; echo worked \" with administrator privileges with prompt \"tomi VPN is disconnected!\n Enter password to reconect tomi VPN\"' ";
                             if(exec(command_ss_reconect.str().c_str()).empty())
                             {
                                 remove(STATUS_PATH);
@@ -171,10 +171,10 @@ void SendSignal(int signal)
 
 //sending signal to stop checking
 
-#define WG_PATH "/Applications/Decentr.app/Contents/Frameworks/Decentr Framework.framework/Helpers/wg"
-#define WG_QUICK_PATH "/Applications/Decentr.app/Contents/Frameworks/Decentr Framework.framework/Helpers/wg-quick"
-#define WG_GO_PATH "/Applications/Decentr.app/Contents/Frameworks/Decentr Framework.framework/Helpers/wireguard-go"
-#define WG_BASH_PATH "/Applications/Decentr.app/Contents/Frameworks/Decentr Framework.framework/Helpers/bash"
+#define WG_PATH "/Applications/tomi.app/Contents/Frameworks/tomi Framework.framework/Helpers/wg"
+#define WG_QUICK_PATH "/Applications/tomi.app/Contents/Frameworks/tomi Framework.framework/Helpers/wg-quick"
+#define WG_GO_PATH "/Applications/tomi.app/Contents/Frameworks/tomi Framework.framework/Helpers/wireguard-go"
+#define WG_BASH_PATH "/Applications/tomi.app/Contents/Frameworks/tomi Framework.framework/Helpers/bash"
 
 bool isWGInstalled()
 {
@@ -240,64 +240,86 @@ int main()
         {
             outMessage_ss << "{\"error\":\"invalid json\"}";
         }else{
-            setenv("PATH", "/Applications/Decentr.app/Contents/Frameworks/Decentr Framework.framework/Helpers:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin", 1);
+            setenv("PATH", "/Applications/tomi.app/Contents/Frameworks/tomi Framework.framework/Helpers:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin", 1);
             
             if (message["type"].get<std::string>()=="connect")
             {
                 //Applications
                 //check that json hsve required parameters
+                //logFile <<"Connect: " << std::endl;
                 if(message.find("params")==message.end())
                 {
                     outMessage_ss << "{\"error\":\"invalid json, no 'params'\"}";
                 }
                 else
                 {
+                    //logFile <<"Connect: correct " << std::endl;
                     
-                    uint16_t port = GetFreeUDPPort();
+                    int port = getFreeUDPPort1();
                     //logFile << "Port: " << port << std::endl;
                     
-                    json params = message["params"];
-                    // create config file
-                    std::ofstream configFile;
-                    configFile.open(CONFIG_PATH);
-                    configFile <<"[Interface]"<<std::endl;
-                    configFile <<"PrivateKey = "<< params["wgPrivateKey"].get<std::string>() << std::endl;
-                    configFile <<"ListenPort = "<< port << std::endl;
-                    configFile <<"Address = " << params["ipV4"].get<std::string>() << "/32, "<< params["ipV6"].get<std::string>() << "/128"<< std::endl;
-                    configFile <<"DNS = 10.8.0.1"<<std::endl;
-                    configFile <<"[Peer]"<<std::endl;
-                    configFile <<"PublicKey = "<< params["hostPublicKey"].get<std::string>() << std::endl;
-                    configFile <<"AllowedIPs = 0.0.0.0/0, ::/0" << std::endl;
-                    configFile <<"Endpoint = "<< params["host"].get<std::string>() <<":"<< params["port"].get<int>() <<  std::endl;
-                    configFile <<"PersistentKeepalive = 15"<<std::endl;
-                    configFile.close();
-                    
-                    std::stringstream command_ss_up;
-                    // first disconnect wg if it is no connected
-                    
-                    command_ss_up << "/usr/bin/osascript -e 'do shell script \"bash -c \\\"wg-quick down "<< CONFIG_PATH<<" \\\" 2>&1; bash -c \\\"wg-quick up "<< CONFIG_PATH " \\\" 2>&1 \" with administrator privileges with prompt \"Enter password to connect Decentr VPN\"' ";
-                    
-                    if(exec(command_ss_up.str().c_str()).empty())
+                    if(port == -1)
                     {
-                        outMessage_ss << "{\"result\":false}";
-                    }else{
-                        // create status file
+                        //logFile <<"Port error: " << std::endl;
+                        outMessage_ss << "{\"error\":\"UDP port error\"}";
+                    }else {
                         
-                        json status_js;
-                        status_js["address"] = params["address"].get<std::string>();
-                        status_js["sessionId"] = params["sessionId"].get<int>();
-                        status_js["interface"] = "wg98";
-                        status_js["nodeAddress"] = params["nodeAddress"].get<std::string>();
-                        std::ofstream statusFile;
-                        statusFile.open(STATUS_PATH);
-                        statusFile<<status_js.dump();
-                        statusFile.close();
+                        json params = message["params"];
+                        // create config file
+                        std::ofstream configFile;
+                        configFile.open(CONFIG_PATH);
+                        configFile <<"[Interface]"<<std::endl;
+                        configFile <<"PrivateKey = "<< params["wgPrivateKey"].get<std::string>() << std::endl;
+                        configFile <<"ListenPort = "<< port << std::endl;
+                        configFile <<"Address = " << params["ipV4"].get<std::string>() << "/32";
                         
-                        outMessage_ss << "{\"result\":true" << ",\"response\":"<<status_js.dump()<<"}";
+                        if(params.contains("ipV6"))
+                        {
+                            configFile << ", " << params["ipV6"].get<std::string>() << "/128"<< std::endl;
+                        }else{
+                            configFile << std::endl;
+                        }
+                        if(params.contains("DNS"))
+                        {
+                            configFile <<"DNS = " <<  params["DNS"].get<std::string>() <<std::endl;
+                        }else{
+                            configFile <<"DNS = 10.8.0.1"<<std::endl;
+                        }
                         
-                        SendSignal(START);
+                        
+                        configFile <<"[Peer]"<<std::endl;
+                        configFile <<"PublicKey = "<< params["hostPublicKey"].get<std::string>() << std::endl;
+                        configFile <<"AllowedIPs = 0.0.0.0/0, ::/0" << std::endl;
+                        configFile <<"Endpoint = "<< params["host"].get<std::string>() <<":"<< params["port"].get<int>() <<  std::endl;
+                        configFile <<"PersistentKeepalive = 15"<<std::endl;
+                        configFile.close();
+                        
+                        std::stringstream command_ss_up;
+                        // first disconnect wg if it is no connected
+                        
+                        command_ss_up << "/usr/bin/osascript -e 'do shell script \"bash -c \\\"wg-quick down "<< CONFIG_PATH<<" \\\" 2>&1; bash -c \\\"wg-quick up "<< CONFIG_PATH " \\\" 2>&1 \" with administrator privileges with prompt \"Enter password to connect tomi VPN\"' ";
+                        
+                        if(exec(command_ss_up.str().c_str()).empty())
+                        {
+                            outMessage_ss << "{\"result\":false}";
+                        }else{
+                            // create status file
+                            
+                            json status_js;
+                            status_js["address"] = params["address"].get<std::string>();
+                            status_js["sessionId"] = params["sessionId"].get<int>();
+                            status_js["interface"] = "wg98";
+                            status_js["nodeAddress"] = params["nodeAddress"].get<std::string>();
+                            std::ofstream statusFile;
+                            statusFile.open(STATUS_PATH);
+                            statusFile<<status_js.dump();
+                            statusFile.close();
+                            
+                            outMessage_ss << "{\"result\":true" << ",\"response\":"<<status_js.dump()<<"}";
+                            
+                            SendSignal(START);
+                        }
                     }
-                    
                 }
             }
             else if(message["type"].get<std::string>()=="status")
@@ -328,7 +350,7 @@ int main()
             {
                 SendSignal(PAUSE);
                 std::stringstream command_ss_down;
-                command_ss_down << "/usr/bin/osascript -e 'do shell script \"bash -c \\\"wg-quick down "<< CONFIG_PATH <<"\\\" ; echo worked \" with administrator privileges with prompt \"Enter password to disconnect Decentr VPN\"' ";
+                command_ss_down << "/usr/bin/osascript -e 'do shell script \"bash -c \\\"wg-quick down "<< CONFIG_PATH <<"\\\" ; echo worked \" with administrator privileges with prompt \"Enter password to disconnect tomi VPN\"' ";
                 
                 if(exec(command_ss_down.str().c_str()).empty())
                 {

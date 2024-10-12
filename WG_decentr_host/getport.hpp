@@ -8,14 +8,11 @@
 #ifndef getport_hpp
 #define getport_hpp
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <unistd.h>
+#include <iostream>
+#include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
-#include <arpa/inet.h>
+#include <unistd.h>
 
-uint16_t GetFreeUDPPort();
-
+int getFreeUDPPort1();
 #endif /* getport_hpp */

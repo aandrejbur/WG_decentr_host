@@ -7,40 +7,33 @@
 
 #include "getport.hpp"
 
-#define SERVER_ADDR "172.217.160.99"
-#define SERVER_PORT 80
 
-uint16_t GetFreeUDPPort()
-{
-    char myIP[16];
-    unsigned int myPort;
-    struct sockaddr_in server_addr, my_addr;
-    int sockfd;
-
-    // Connect to server
-    if ((sockfd = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
-        perror("Can't open stream socket.");
-        exit(-1);
+int getFreeUDPPort1() {
+    int sockfd = socket(AF_INET, SOCK_DGRAM, 0);
+    if (sockfd < 0) {
+        std::cerr << "Error creating socket" << std::endl;
+        return -1;
     }
-
-    // Set server_addr
-    bzero(&server_addr, sizeof(server_addr));
-    server_addr.sin_family = AF_INET;
-    server_addr.sin_addr.s_addr = inet_addr(SERVER_ADDR);
-    server_addr.sin_port = htons(SERVER_PORT);
-
-    // Connect to server
-    if (connect(sockfd, (struct sockaddr *) &server_addr, sizeof(server_addr)) < 0) {
+    
+    struct sockaddr_in addr;
+    addr.sin_family = AF_INET;
+    addr.sin_addr.s_addr = INADDR_ANY;
+    addr.sin_port = 0; // Let the OS choose the port
+    
+    if (bind(sockfd, (struct sockaddr*)&addr, sizeof(addr)) < 0) {
+        std::cerr << "Error binding socket" << std::endl;
         close(sockfd);
-        exit(-1);
+        return -1;
     }
-
-    // Get my ip address and port
-    bzero(&my_addr, sizeof(my_addr));
-    socklen_t len = sizeof(my_addr);
-    getsockname(sockfd, (struct sockaddr *) &my_addr, &len);
-    inet_ntop(AF_INET, &my_addr.sin_addr, myIP, sizeof(myIP));
-    myPort = ntohs(my_addr.sin_port);
+    
+    socklen_t addr_len = sizeof(addr);
+    if (getsockname(sockfd, (struct sockaddr*)&addr, &addr_len) < 0) {
+        std::cerr << "Error getting socket name" << std::endl;
+        close(sockfd);
+        return -1;
+    }
+    
+    int freePort = ntohs(addr.sin_port);
     close(sockfd);
-    return myPort;
+    return freePort;
 }
