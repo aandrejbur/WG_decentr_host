@@ -1,11 +1,13 @@
 #ifndef STDCAPTURE_H
 #define STDCAPTURE_H
 
-
 #include <windows.h>
 #include <fcntl.h>
 #include <stdio.h>
 #include <string>
+#include <io.h>
+
+
 #pragma warning(disable : 4996)
 
 class StdCapture
